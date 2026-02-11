@@ -1,6 +1,6 @@
-#Configuration d'une interface virtuelle pour VLAN (Avec DHCP Helper)
+# Configuration d'une interface virtuelle pour VLAN (Avec DHCP Helper)
 
-Passer en mode administrateur
+# Etape 1 : Passer en mode administrateur
 
 Switch> en
 
