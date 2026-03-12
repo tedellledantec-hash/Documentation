@@ -129,6 +129,8 @@ tcp 201.49.10.17:4958      192.168.10.2:25412 130.25.2.23:80     130.25.2.23:80
 tcp 201.49.10.17:5412      192.168.20.8:10584 130.25.2.23:80     130.25.2.23:80
 tcp 201.49.10.17:5120      192.168.50.42:10152 130.25.2.23:80    130.25.2.23:80
 
+---
+
 ## 6. Tableau récapitulatif des commandes
 
 | Étape                   | NAT Statique                                   | NAT Dynamique                              | PAT                                                      |
@@ -138,6 +140,8 @@ tcp 201.49.10.17:5120      192.168.50.42:10152 130.25.2.23:80    130.25.2.23:80
 | **ACL**                 | Non                                            | `access-list ...`                          | `access-list ...`                                        |
 | **Commande principale** | `ip nat inside source static [local] [global]` | `ip nat inside source list [n] pool [nom]` | `ip nat inside source list [n] interface [int] overload` |
 | **Mot clé**             | `static`                                       | `pool`                                     | `overload`                                               |
+
+---
 
 ## 7. Commandes de vérification et dépannage
 
@@ -150,6 +154,8 @@ tcp 201.49.10.17:5120      192.168.50.42:10152 130.25.2.23:80    130.25.2.23:80
 | `clear ip nat translation *` | Vide la table de traduction (attention !)                |
 | `debug ip nat`               | Active le debug en temps réel (à désactiver après usage) |
 | `no debug ip nat`            | Désactive le debug NAT                                   |
+
+---
 
 ## 8. Avantages et Inconvénients
 
@@ -170,6 +176,8 @@ tcp 201.49.10.17:5120      192.168.50.42:10152 130.25.2.23:80    130.25.2.23:80
 | Perte de l'adressage de bout en bout | Problèmes avec certains protocoles (FTP, VoIP) |
 | Perte de traçabilité                 | Dépannage plus difficile                       |
 | Complexité                           | Nécessite une configuration et une maintenance |
+
+---
 
 ## 9. Schéma de fonctionnement PAT
 
