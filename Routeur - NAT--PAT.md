@@ -31,9 +31,9 @@
 | **PAT**           | n IP privées ↔ 1 IP publique         | Usage domestique/PME (économique)       | `ip nat inside source list [ACL] interface [sortie] overload` |
 
 
-## Exemples de commandes
+# Exemples de commandes
 
-### NAT Statique
+## NAT Statique
 
 ! Rediriger tout ce qui arrive sur 201.49.10.30 vers 192.168.1.100
 R1(config)# ip nat inside source static 192.168.1.100 201.49.10.30
@@ -41,7 +41,7 @@ R1(config)# ip nat inside source static 192.168.1.100 201.49.10.30
 ! Vérification
 R1# show ip nat translations
 
-#### 1. NAT Statique conf détaillés :
+### 1. NAT Statique conf détaillés :
 
 ! Étape 1 : Définir les interfaces
 R1(config)# interface fa0/0
@@ -62,7 +62,7 @@ R1# show ip nat statistics
 
 
 
-### NAT Dynamique (avec pool)
+## NAT Dynamique (avec pool)
 
 ! Créer le pool d'adresses publiques
 R1(config)# ip nat pool POOL-NAT 201.49.10.17 201.49.10.30 netmask 255.255.255.240
@@ -74,7 +74,7 @@ R1(config)# access-list 1 permit 192.168.1.0 0.0.0.255
 R1(config)# ip nat inside source list 1 pool POOL-NAT
 
 
-#### NAT Dynamique conf détaillées :
+### NAT Dynamique conf détaillées :
 
 ! Étape 1 : Définir les interfaces
 R1(config)# interface fa0/0
@@ -111,9 +111,9 @@ R1(config)# access-list 2 permit 192.168.0.0 0.0.0.255
 ! PAT sur l'interface de sortie
 R1(config)# ip nat inside source list 2 interface serial 0/0 overload
 
-#### 3. PAT (NAT Overload) conf Détaillées :
+### 3. PAT (NAT Overload) conf Détaillées :
 
-méthode 1 : Avec une interface de sortie (la plus courante)
+#### méthode 1 : Avec une interface de sortie (la plus courante)
 
 ! Étape 1 : Définir les interfaces
 R1(config)# interface fa0/0
@@ -136,7 +136,7 @@ R1# show ip nat translations
 R1# show ip nat statistics
 
 
-méthode 2 :
+#### méthode 2 :
 
 ! Créer le pool (même si on utilise overload)
 R1(config)# ip nat pool PAT-POOL 201.49.10.17 201.49.10.17 netmask 255.255.255.240
@@ -148,7 +148,7 @@ R1(config)# access-list 3 permit 192.168.0.0 0.0.0.255
 R1(config)# ip nat inside source list 3 pool PAT-POOL overload
 
 
-#### Commandes de vérification essentielles :
+### Commandes de vérification essentielles :
 
 ! Voir la table de traduction active
 R1# show ip nat translations
