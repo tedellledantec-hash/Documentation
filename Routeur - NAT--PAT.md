@@ -58,15 +58,19 @@ R1(config-if)# exit
 R1(config)# interface s0/0
 R1(config-if)# ip nat outside
 R1(config-if)# exit
+```
+---
 
 ### 5.2 NAT Statique 
 
 ```cisco
 ! Syntaxe : ip nat inside source static [IP_locale] [IP_globale]
 R1(config)# ip nat inside source static 192.168.1.100 201.49.10.30
-
+```
 ! Exemple concret : serveur web interne accessible de l'extérieur
 ! Tout paquet destiné à 201.49.10.30 sera redirigé vers 192.168.1.100
+
+---
 
 ### Vérification :
 
@@ -74,6 +78,9 @@ R1(config)# ip nat inside source static 192.168.1.100 201.49.10.30
   R1# show ip nat translations
 Pro Inside global      Inside local       Outside local      Outside global
 --- 201.49.10.30       192.168.1.100      ---                ---
+```
+
+---
 
 ### 5.3 NAT Dynamique
 
@@ -88,6 +95,9 @@ R1(config)# access-list 1 deny any
 
 ! Étape 3 : Lier l'ACL au pool
 R1(config)# ip nat inside source list 1 pool POOL-NAT
+```
+
+---
 
 ### Vérification :
 
@@ -95,6 +105,9 @@ R1(config)# ip nat inside source list 1 pool POOL-NAT
 R1# show ip nat translations
 R1# show ip nat pool
 R1# show ip nat statistics
+```
+
+---
 
 ### 5.4 PAT (NAT Overload)
 
@@ -107,6 +120,9 @@ R1(config)# access-list 2 permit 192.168.0.0 0.0.0.255
 ! Étape 2 : Configurer le PAT avec surcharge
 ! L'IP de l'interface s0/0 sera utilisée automatiquement
 R1(config)# ip nat inside source list 2 interface serial 0/0 overload
+```
+
+---
 
 #### Méthode B : Avec pool (si plusieurs IPs publiques mais surcharge activée)
 
@@ -119,6 +135,9 @@ R1(config)# access-list 3 permit 192.168.0.0 0.0.0.255
 
 ! PAT avec pool + overload
 R1(config)# ip nat inside source list 3 pool PAT-POOL overload
+```
+
+---
 
 ### Exemple de table de traduction PAT :
 
@@ -128,6 +147,9 @@ Pro Inside global          Inside local       Outside local      Outside global
 tcp 201.49.10.17:4958      192.168.10.2:25412 130.25.2.23:80     130.25.2.23:80
 tcp 201.49.10.17:5412      192.168.20.8:10584 130.25.2.23:80     130.25.2.23:80
 tcp 201.49.10.17:5120      192.168.50.42:10152 130.25.2.23:80    130.25.2.23:80
+```
+
+
 
 ---
 
@@ -178,24 +200,5 @@ tcp 201.49.10.17:5120      192.168.50.42:10152 130.25.2.23:80    130.25.2.23:80
 | Complexité                           | Nécessite une configuration et une maintenance |
 
 ---
-
-## 9. Schéma de fonctionnement PAT
-
-┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
-│  Réseau Privé   │         │     Routeur      │         │   Internet      │
-│                 │         │   (Translation)  │         │                 │
-│ 192.168.10.2    │────────→│  20.21.22.23     │────────→│  130.25.2.23    │
-│ :25412          │         │ :4958            │         │  :80            │
-│                 │         │                  │         │                 │
-│ 192.168.20.8    │────────→│  20.21.22.23     │────────→│  130.25.2.23    │
-│ :10584          │         │ :5412            │         │  :80            │
-│                 │         │                  │         │                 │
-│ 192.168.50.42   │────────→│  20.21.22.23     │────────→│  130.25.2.23    │
-│ :10152          │         │ :5120            │         │  :80            │
-└─────────────────┘         └──────────────────┘         └─────────────────┘
-       ↑                              ↑                          ↑
-   Inside Local                 Inside Global                Outside Global
-   (IP:Port privés)            (IP publique + ports         (Destination
-                               dynamiques)                   finale)
 
 By tedell
