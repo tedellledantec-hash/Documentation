@@ -22,7 +22,7 @@ Les **switches Cisco** sont des équipements réseau permettant de segmenter et 
 ### 2.1. Activation du DHCP Snooping
 Le **DHCP Snooping** permet de filtrer les messages DHCP non autorisés en identifiant les ports "de confiance" (trusted) et en limitant le nombre de requêtes DHCP par port.
 
-```bash
+```cisco
 conf t
 ip dhcp snooping
 ip dhcp snooping vlan 1
@@ -31,25 +31,35 @@ interface gig0/1
 ip dhcp snooping information option
 interface range fa0/1-24
     ip dhcp snooping limit rate 20
+```
+
+---
 
 ### 2. Simulation d’Attaques depuis Kali Linux
-DHCP Starvation
-But : Épuiser le pool d’adresses IP du serveur DHCP.
+- **DHCP** Starvation
+- **But** : Épuiser le pool d’adresses IP du serveur DHCP.
 
 yersinia dhcp -attack 1 -interface eth0
 tcpdump -i eth0 port 67 or port 68
 
-MAC Spoofing
-But : Usurper une adresse MAC pour contourner les contrôles d’accès.
-Surveillance côté Debian :
+### MAC Spoofing
+- **But** : Usurper une adresse MAC pour contourner les contrôles d’accès.
+- **Surveillance côté Debian** :
 
+```bash
 journalctl -u isc-dhcp-server
+```
+
+```bash
 systemctl status isc-dhcp-server
+```
+---
 
 ### 3. Sécurisation Avancée du Switch
 Configuration des Ports
 But : Limiter les adresses MAC et activer la sécurité portuaire.
 
+```cisco
 enable
 configure terminal
 ip dhcp snooping
@@ -68,15 +78,24 @@ interface range fa0/1-24,gig0/2
  switchport port-security mac-address sticky
  switchport port-security violation shutdown
  ip dhcp snooping limit rate 4
-
+```
 Réactivation d’un Port Désactivé :
-
+```cisco
 int fa0/1
  shutdown
  no shutdown
+```
+
+---
 
 ###  4. Vérification des Adresses MAC
+```cisco
 show mac address-table count
+```
+```cisco
 show mac address-table
+```
 
 show mac address-table : Liste toutes les adresses MAC apprises par le switch
+
+    by tedell
