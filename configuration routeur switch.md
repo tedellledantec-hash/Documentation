@@ -1,0 +1,612 @@
+# 📚 Documentation TP Cisco Packet Tracer - MediCare Solution
+
+- [📚 Documentation TP Cisco Packet Tracer - MediCare Solution](#-documentation-tp-cisco-packet-tracer---medicare-solution)
+  - [🎯 Contexte du Projet](#-contexte-du-projet)
+  - [📋 Données Réseau](#-données-réseau)
+    - [VLANs et Réseaux](#vlans-et-réseaux)
+    - [Équipements et Adressage](#équipements-et-adressage)
+    - [Accès SSH](#accès-ssh)
+    - [Bannière](#bannière)
+  - [🔧 Configuration Router0](#-configuration-router0)
+    - [1. Configuration de base (Host, Domain, Secret)](#1-configuration-de-base-host-domain-secret)
+    - [2. Configuration SSH Server](#2-configuration-ssh-server)
+    - [3. Configuration des Utilisateurs](#3-configuration-des-utilisateurs)
+    - [4. Configuration VTY Lines (Accès distant SSH)](#4-configuration-vty-lines-accès-distant-ssh)
+    - [5. Configuration des Interfaces (Router-on-a-Stick)](#5-configuration-des-interfaces-router-on-a-stick)
+    - [6. Configuration DHCP Relay Agent](#6-configuration-dhcp-relay-agent)
+  - [🔧 Configuration Switch0](#-configuration-switch0)
+    - [1. Configuration de base](#1-configuration-de-base)
+    - [2. Configuration VTP (Serveur)](#2-configuration-vtp-serveur)
+    - [3. Configuration des VLANs](#3-configuration-des-vlans)
+    - [4. Configuration Interface Management (VLAN 99)](#4-configuration-interface-management-vlan-99)
+    - [5. Configuration SSH Server](#5-configuration-ssh-server)
+    - [6. Configuration VTY Lines](#6-configuration-vty-lines)
+    - [7. Configuration DHCP Snooping](#7-configuration-dhcp-snooping)
+    - [8. Configuration des Ports](#8-configuration-des-ports)
+  - [Ports Trunk](#ports-trunk)
+    - [9. Configuration Console](#9-configuration-console)
+  - [🔧 Configuration Switch1](#-configuration-switch1)
+    - [1. Configuration de base](#1-configuration-de-base-1)
+    - [2. Configuration VTP (Client)](#2-configuration-vtp-client)
+    - [3. Configuration Interface Management (VLAN 99)](#3-configuration-interface-management-vlan-99)
+    - [4. Configuration SSH Server](#4-configuration-ssh-server)
+    - [5. Configuration VTY Lines](#5-configuration-vty-lines)
+    - [6. Configuration DHCP Snooping](#6-configuration-dhcp-snooping)
+    - [7. Configuration des Ports](#7-configuration-des-ports)
+    - [Ports Trunk](#ports-trunk-1)
+  - [📝 Vérification des Configurations](#-vérification-des-configurations)
+
+
+
+
+## 🎯 Contexte du Projet
+
+**Entreprise** : MediCare Solution  
+**Objectif** : Sécurisation de l'infrastructure réseau (Switch0 et Switch1) et configuration du routeur pour permettre le bon fonctionnement de l'infra de façon sécurisée.
+
+**Contraintes clés** :
+- Protection des données et utilisateurs contre toute attaque interne
+- Le site `https://www.medicare.intra` doit être visible de tous
+- Domaine VTP 2 : `MediCare`
+- Mot de passe VTP : `Bissic2017`
+
+---
+
+## 📋 Données Réseau
+
+### VLANs et Réseaux
+
+| VLAN | Nom | Réseau | Gateway | Description |
+|------|-----|--------|---------|-------------|
+| 10 | DME | 192.168.10.0/24 | .254 | VLAN DME |
+| 20 | ADMIN | 192.168.30.0/24 | .254 | VLAN ADMIN |
+| 30 | BIO | 192.168.20.0/24 | .254 | VLAN BIO |
+| 66 | BLACKHOLE | - | - | VLAN de blackhole |
+| 99 | Natif | - | - | VLAN natif |
+
+### Équipements et Adressage
+
+| Équipement | Interface | IP Address | Rôle |
+|------------|-----------|------------|------|
+| Router0 | Fa0/0.10 | 192.168.10.254 | Gateway VLAN 10 |
+| Router0 | Fa0/0.20 | 192.168.30.254 | Gateway VLAN 20 |
+| Router0 | Fa0/0.30 | 192.168.20.254 | Gateway VLAN 30 |
+| Router0 | Fa0/1 | 10.0.0.254 | WAN vers Proxmox |
+| Switch0 | VLAN 99 | 192.168.30.253/24 | Management |
+| Switch1 | VLAN 99 | 192.168.30.252/24 | Management |
+
+### Accès SSH
+- **VLAN autorisé** : VLAN 20 (ADMIN)
+- **Équipements concernés** : Router0, Switch0, Switch1
+- **Login** : admin / Root1c2017
+- **Login stagiaire** : stagiaire / Biss1c2017
+- **Enable Secret** : Root1c2017
+- **Chiffrement** : fort (stagiaire = privilège le plus bas)
+- **Déconnexion** : 120 secondes (2 min max)
+- **Essais max** : 3
+
+### Bannière
+
+Banner motd #ACCES RESERVE!#
+
+
+---
+
+## 🔧 Configuration Router0
+
+### 1. Configuration de base (Host, Domain, Secret)
+
+```cisco
+! Nom d'hôte
+hostname Router0
+
+! Domaine DNS
+ip domain-name MediCare.intra
+
+! Mot de passe enable chiffré
+enable secret Root1c2017
+
+! Bannière
+banner motd #ACCES RESERVE!#
+
+! Chiffrement des mots de passe
+service password-encryption
+```
+
+
+### 2. Configuration SSH Server
+```cisco
+Copy
+
+! Génération des clés RSA (modulus 2048)
+crypto key generate rsa general-keys modulus 2048
+
+! Configuration SSH
+ip ssh version 2
+ip ssh authentication-retries 3
+ip ssh time-out 120
+```
+---
+
+### 3. Configuration des Utilisateurs
+```cisco
+Copy
+
+! Utilisateur admin (privilège 15)
+username admin privilege 15 secret Root1c2017
+
+! Utilisateur stagiaire (privilège 1 - le plus bas)
+username stagiaire privilege 1 secret Biss1c2017
+```
+
+---
+
+### 4. Configuration VTY Lines (Accès distant SSH)
+```cisco
+Copy
+
+! ACL pour restriction SSH
+ip access-list standard ACCES_SSH
+ permit 192.168.30.0 0.0.0.255
+ deny any
+
+! Configuration VTY Lines 0 à 4
+line vty 0 4
+ access-class ACCES_SSH in
+ login local
+ transport input ssh
+ transport output none
+line vty 5 15
+ access-class ACCES_SSH in
+ login local
+ transport input ssh
+ transport output none
+```
+
+---
+
+### 5. Configuration des Interfaces (Router-on-a-Stick)
+```cisco
+Copy
+
+! Interface physique vers Switch1
+interface FastEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ no shutdown
+
+! Sous-interface VLAN 10 (DME)
+interface FastEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.254 255.255.255.0
+ ip helper-address 192.168.30.253  ! DHCP Relay vers Switch0
+
+! Sous-interface VLAN 20 (ADMIN)
+interface FastEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.30.254 255.255.255.0
+
+! Sous-interface VLAN 30 (BIO)
+interface FastEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.20.254 255.255.255.0
+ ip helper-address 192.168.30.253  ! DHCP Relay vers Switch0
+
+! Interface WAN vers Proxmox
+interface FastEthernet0/1
+ ip address 10.0.0.254 255.255.255.0
+ duplex auto
+ speed auto
+ no shutdown
+```
+
+---
+
+### 6. Configuration DHCP Relay Agent
+```cisco
+Copy
+
+! Activer le relay d'informations DHCP
+ip dhcp relay information trust-all
+```
+
+---
+
+## 🔧 Configuration Switch0
+### 1. Configuration de base
+```cisco
+Copy
+
+! Nom d'hôte
+hostname Switch0
+
+! Domaine DNS
+ip domain-name MediCare.intra
+
+! Mot de passe enable
+enable secret Root1c2017
+
+! Bannière
+banner motd #ACCES RESERVE!#
+
+! Chiffrement des mots de passe
+service password-encryption
+```
+
+---
+
+### 2. Configuration VTP (Serveur)
+```cisco
+Copy
+
+! Mode serveur VTP
+vtp mode server
+vtp domain MediCare
+vtp password Bissic2017
+vtp version 2
+```
+
+---
+
+### 3. Configuration des VLANs
+```cisco
+Copy
+
+! Création des VLANs
+vlan 10
+ name DME
+vlan 20
+ name ADMIN
+vlan 30
+ name BIO
+vlan 66
+ name BLACKHOLE
+vlan 99
+ name Natif
+```
+
+---
+
+### 4. Configuration Interface Management (VLAN 99)
+```cisco
+Copy
+
+interface Vlan99
+ ip address 192.168.30.253 255.255.255.0
+ no shutdown
+
+! Gateway par défaut
+ip default-gateway 192.168.30.254
+```
+
+--- 
+
+### 5. Configuration SSH Server
+```cisco
+Copy
+
+! Génération des clés RSA
+crypto key generate rsa general-keys modulus 2048
+
+! Configuration SSH
+ip ssh version 2
+ip ssh authentication-retries 3
+ip ssh time-out 120
+
+! Utilisateurs (mêmes que Router0)
+username admin privilege 15 secret Root1c2017
+username stagiaire privilege 1 secret Biss1c2017
+```
+
+---
+
+### 6. Configuration VTY Lines
+```cisco
+Copy
+
+! ACL SSH
+ip access-list standard ACCES_SSH
+ permit 192.168.30.0 0.0.0.255
+ deny any
+
+! VTY Lines
+line vty 0 4
+ access-class ACCES_SSH in
+ login local
+ transport input ssh
+ transport output none
+```
+
+---
+
+### 7. Configuration DHCP Snooping
+```cisco
+Copy
+
+! Activation globale
+ip dhcp snooping
+
+! VLANs concernés
+ip dhcp snooping vlan 10,20,30
+
+! Limite de requêtes DHCP (5 requêtes par seconde)
+ip dhcp snooping limit rate 5
+
+! Limite d'enregistrement dynamique à 5 adresses MAC différentes
+! Étendue du port si pb (non demandé dans Packet Tracer)
+```
+
+---
+
+### 8. Configuration des Ports
+Ports d'accès (PCs)
+```cisco
+Copy
+
+! FastEthernet0/1 - PC21 VLAN20
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 20
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ ip dhcp snooping limit rate 5
+
+! FastEthernet0/2 - PC31 VLAN30
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 30
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ ip dhcp snooping limit rate 5
+
+! FastEthernet0/3 - PC11 VLAN10
+interface FastEthernet0/3
+ switchport mode access
+ switchport access vlan 10
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ ip dhcp snooping limit rate 5
+```
+
+---
+
+## Ports Trunk
+```cisco
+Copy
+
+! GigabitEthernet0/1 - Vers Switch1
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport nonegotiate
+ ip dhcp snooping trust
+
+! GigabitEthernet0/2 - Vers Router0 (via Switch1)
+interface GigabitEthernet0/2
+ switchport mode trunk
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport nonegotiate
+ ip dhcp snooping trust
+```
+
+---
+
+### 9. Configuration Console
+```cisco
+Copy
+
+line con 0
+ login local
+ password Root1c2017
+ logging synchronous
+```
+
+---
+
+## 🔧 Configuration Switch1
+### 1. Configuration de base
+```cisco
+Copy
+
+! Nom d'hôte
+hostname Switch1
+
+! Domaine DNS
+ip domain-name MediCare.intra
+
+! Mot de passe enable
+enable secret Root1c2017
+
+! Bannière
+banner motd #ACCES RESERVE!#
+
+! Chiffrement des mots de passe
+service password-encryption
+```
+
+---
+
+### 2. Configuration VTP (Client)
+```cisco
+Copy
+
+! Mode client VTP
+vtp mode client
+vtp domain MediCare
+vtp password Bissic2017
+vtp version 2
+```
+
+---
+
+### 3. Configuration Interface Management (VLAN 99)
+```cisco
+Copy
+
+interface Vlan99
+ ip address 192.168.30.252 255.255.255.0
+ no shutdown
+
+! Gateway par défaut
+ip default-gateway 192.168.30.254
+```
+---
+
+### 4. Configuration SSH Server
+```cisco
+Copy
+
+! Génération des clés RSA
+crypto key generate rsa general-keys modulus 2048
+
+! Configuration SSH
+ip ssh version 2
+ip ssh authentication-retries 3
+ip ssh time-out 120
+
+! Utilisateurs
+username admin privilege 15 secret Root1c2017
+username stagiaire privilege 1 secret Biss1c2017
+```
+
+---
+
+### 5. Configuration VTY Lines
+```cisco
+Copy
+
+! ACL SSH
+ip access-list standard ACCES_SSH
+ permit 192.168.30.0 0.0.0.255
+ deny any
+
+! VTY Lines
+line vty 0 4
+ access-class ACCES_SSH in
+ login local
+ transport input ssh
+ transport output none
+```
+
+---
+
+### 6. Configuration DHCP Snooping
+```cisco
+Copy
+
+! Activation globale
+ip dhcp snooping
+
+! VLANs concernés
+ip dhcp snooping vlan 10,20,30
+```
+
+---
+
+### 7. Configuration des Ports
+Ports d'accès (PCs)
+```cisco
+Copy
+
+! FastEthernet0/1 - PC12 VLAN10
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 10
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ ip dhcp snooping limit rate 5
+
+! FastEthernet0/2 - PC22 VLAN20
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 20
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ ip dhcp snooping limit rate 5
+
+! FastEthernet0/3 - PC32 VLAN30
+interface FastEthernet0/3
+ switchport mode access
+ switchport access vlan 30
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ ip dhcp snooping limit rate 5
+```
+
+---
+
+### Ports Trunk
+```cisco
+Copy
+
+! GigabitEthernet0/1 - Vers Switch0
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport nonegotiate
+ ip dhcp snooping trust
+
+! FastEthernet0/0 - Vers Router0 (Fa0/0)
+interface FastEthernet0/0
+ switchport mode trunk
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport nonegotiate
+ ip dhcp snooping trust
+```
+
+ ---
+
+## 📝 Vérification des Configurations
+Commandes de vérification utiles :
+```cisco
+Copy
+
+! Vérifier VTP
+show vtp status
+show vtp password
+
+! Vérifier VLANs
+show vlan brief
+
+! Vérifier SSH
+show ip ssh
+show users
+
+! Vérifier Port Security
+show port-security
+show port-security interface fa0/1
+
+! Vérifier DHCP Snooping
+show ip dhcp snooping
+show ip dhcp snooping binding
+
+! Vérifier les trunks
+show interfaces trunk
+
+! Vérifier les ACL
+show access-lists
+show ip interface brief
+```
