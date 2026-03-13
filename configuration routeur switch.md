@@ -610,3 +610,4 @@ show interfaces trunk
 show access-lists
 show ip interface brief
 ```
+    by tedell
