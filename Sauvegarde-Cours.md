@@ -187,5 +187,44 @@ En cas de perte de données, l'impact financier peut être notable :
 |-------------------|----------------------------|--------------|
 | **Différentielle** | Archive les fichiers avec bit = 1 | **Ne repositionne pas** les attributs à 0 en fin d'exécution |
 | **Incrémentielle** | Archive les fichiers avec bit = 1 | **Remet tous les attributs à 0** en fin de traitement |
+
 ---
+
+## 8) Après le crash : le DIMA, le PRA
+
+### Impact d'un désastre informatique
+
+> **Statistique alarmante :**  
+> **40% des entreprises** ayant subi un arrêt de **72 heures** de leurs moyens informatiques et télécoms **ne survivent pas** au désastre !
+
+### ⏱️ Indicateurs clés : PDMA/RPO et DMIA/RTO
+
+| Acronyme | Signification | Définition |
+|----------|---------------|------------|
+| **PDMA** (RPO) | *Perte de Données Maximale Admissible* | Durée maximale acceptable entre la dernière sauvegarde et l'incident. Quantifie la perte de données acceptée. |
+| **DMIA** (RTO) | *Délai Maximal d'Interruption Admissible* | Temps total pour : décision de passage en mode secours + relance de la ressource + restauration des données |
+
+### PCA : Plan de Continuité d'Activité
+
+> **Définition officielle :**  
+> Le PCA représente l'ensemble des mesures visant à assurer, selon divers scénarios de crises, y compris face à des chocs extrêmes, le maintien — le cas échéant de façon temporaire selon un mode dégradé — des prestations de services ou d'autres tâches opérationnelles essentielles ou importantes de l'entreprise, puis la reprise planifiée des activités.
+
+### PRA : Plan de Reprise d'Activité
+
+> **Définition :**  
+> Le PRA (DR : *Disaster Recovery Plan*) définit **comment les données sauvegardées seront utilisées** pour reprendre l'activité après un incident.
+
+**Principe :** Sauvegarder les données ne suffit pas, il faut aussi prévoir leur exploitation en cas de crise.
+
+### Synthèse PCA vs PRA
+
+| | PCA | PRA |
+|---|-----|-----|
+| **Objectif** | Maintenir l'activité pendant la crise | Reprendre l'activité après la crise |
+| **Portée** | Continuité opérationnelle | Récupération des systèmes |
+| **Durée** | Mode dégradé temporaire | Retour à la normale |
+| **Focus** | Processus métier | Infrastructure IT et données |
+
+---
+
   by Tedell
