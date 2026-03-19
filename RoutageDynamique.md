@@ -1,5 +1,4 @@
 # Le routage dynamique
-*BTS SIO – B2*
 
 ---
 
@@ -112,21 +111,6 @@ Un **système autonome (SA)** est un ensemble de routeurs sous une administratio
   - Exemples : **RIP, EIGRP, OSPF, IS-IS**
 - **EGP (Exterior Gateway Protocol)** : routage *inter-SA*, entre différents systèmes autonomes.
   - Le seul protocole EGP viable aujourd'hui : **BGP** (Border Gateway Protocol), protocole officiel d'Internet.
-
-### Arbre de classification
-
-```
-Protocoles de routage dynamique
-├── IGP (Interior Gateway Protocols)
-│   ├── Vecteur de distance
-│   │   ├── RIPv1 → RIPv2
-│   │   └── IGRP  → EIGRP
-│   └── État de liens
-│       ├── OSPF
-│       └── IS-IS
-└── EGP (Exterior Gateway Protocols)
-    └── BGP
-```
 
 ### Liste des protocoles
 
