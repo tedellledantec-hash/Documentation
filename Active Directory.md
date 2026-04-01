@@ -60,27 +60,80 @@
 
 ### Étape 2.2 : Configurer les paramètres (exemples)
 
-**Configuration Windows Update :**
+> 💡 **Rappel** : Dans l'éditeur de GPO, les paramètres sont répartis en deux grandes branches :
+> - **Computer Configuration** → s'applique à la machine, peu importe l'utilisateur connecté
+> - **User Configuration** → s'applique à l'utilisateur, peu importe la machine utilisée
 
+---
+
+#### 🔄 Configuration Windows Update
+
+**Où aller :**
 ```
-Computer Configuration → Policies → Administrative Templates
-→ Windows Components → Windows Update
-→ "Configure Automatic Updates" → Enabled
+Group Policy Management Editor
+└── Computer Configuration
+    └── Policies
+        └── Administrative Templates
+            └── Windows Components
+                └── Windows Update
+                    └── ✏️ "Configure Automatic Updates"  →  Double-clic → Enabled
 ```
 
-**Restriction logicielle :**
+**Options recommandées après activation :**
+- `4 - Auto download and schedule the install` → téléchargement et installation automatiques
+- Définir le jour et l'heure d'installation (ex : tous les jours à 3h00)
 
+---
+
+#### 🚫 Restriction logicielle (SRP)
+
+**Où aller :**
 ```
-Computer Configuration → Policies → Windows Settings
-→ Security Settings → Software Restriction Policies
+Group Policy Management Editor
+└── Computer Configuration
+    └── Policies
+        └── Windows Settings
+            └── Security Settings
+                └── Software Restriction Policies
+                    └── Clic droit → "New Software Restriction Policies"
+                        └── Additional Rules → Clic droit → New Path Rule
 ```
 
-**Fond d'écran corporate :**
+> ⚠️ Préférer **AppLocker** (plus moderne) disponible au même emplacement :
+> `Security Settings → Application Control Policies → AppLocker`
 
+---
+
+#### 🖼️ Fond d'écran corporate
+
+**Où aller :**
 ```
-User Configuration → Policies → Administrative Templates
-→ Desktop → Desktop → "Desktop Wallpaper"
+Group Policy Management Editor
+└── User Configuration
+    └── Policies
+        └── Administrative Templates
+            └── Desktop
+                └── Desktop
+                    └── ✏️ "Desktop Wallpaper"  →  Double-clic → Enabled
 ```
+
+**Paramètres à renseigner :**
+- **Wallpaper Name** : chemin UNC vers l'image (ex : `\\serveur\partage\fond.jpg`)
+- **Wallpaper Style** : `Fill`, `Fit`, `Stretch`, `Tile` ou `Center`
+
+---
+
+#### 🔒 Autres GPO utiles — Chemins de référence
+
+| Paramètre | Chemin dans l'éditeur |
+|---|---|
+| Désactiver le Panneau de configuration | `User Config → Policies → Admin Templates → Control Panel → "Prohibit access to Control Panel"` |
+| Bloquer l'accès à cmd.exe | `User Config → Policies → Admin Templates → System → "Prevent access to the command prompt"` |
+| Déconnecter session inactive | `Computer Config → Policies → Windows Settings → Security Settings → Local Policies → Security Options → "Interactive logon: Machine inactivity limit"` |
+| Mappage de lecteurs réseau | `User Config → Preferences → Windows Settings → Drive Maps → Clic droit → New → Mapped Drive` |
+| Déployer une imprimante | `User Config → Preferences → Control Panel Settings → Printers → Clic droit → New → Shared Printer` |
+| Scripts de démarrage | `Computer Config → Policies → Windows Settings → Scripts → Startup` |
+| Scripts de connexion utilisateur | `User Config → Policies → Windows Settings → Scripts → Logon` |
 
 ### Étape 2.3 : Lier la GPO aux PC
 
